@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>FitBuddy - AI Workout Generator</title>
+
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+
+<div class="page">
+
+    <!-- HEADER -->
+    <header class="header">
+
+        <div class="logo">💪</div>
+
+        <h1>FitBuddy - AI Workout Generator</h1>
+
+        <p>
+            Get a personalized workout plan powered by AI
+        </p>
+
+        <div class="status">
+            <span class="dot"></span>
+            AI Backend Connected
+        </div>
+
+    </header>
+
+
+    <!-- FORM CARD -->
+    <main class="card">
+
+        <h2>🏋️ Create Your Personalized Workout</h2>
+
+        <p class="description">
+            Enter your details below and FitBuddy AI will
+            create a workout plan designed for your fitness goal.
+        </p>
+
+
+        <form id="workoutForm">
+
+            <!-- NAME -->
+            <div class="form-group">
+
+                <label for="name">
+                    Name
+                </label>
+
+                <input
+                    type="text"
+                    id="name"
+                    placeholder="Enter your name"
+                    required
+                >
+
+            </div>
+
+
+            <!-- USER ID -->
+            <div class="form-group">
+
+                <label for="userId">
+                    User ID
+                </label>
+
+                <input
+                    type="number"
+                    id="userId"
+                    placeholder="Enter user ID"
+                    required
+                >
+
+            </div>
+
+
+            <!-- AGE -->
+            <div class="form-group">
+
+                <label for="age">
+                    Age
+                </label>
+
+                <input
+                    type="number"
+                    id="age"
+                    placeholder="Enter your age"
+                    min="10"
+                    max="100"
+                    required
+                >
+
+            </div>
+
+
+            <!-- WEIGHT -->
+            <div class="form-group">
+
+                <label for="weight">
+                    Weight (kg)
+                </label>
+
+                <input
+                    type="number"
+                    id="weight"
+                    placeholder="Enter your weight"
+                    min="20"
+                    max="300"
+                    step="0.1"
+                    required
+                >
+
+            </div>
+
+
+            <!-- FITNESS GOAL -->
+            <div class="form-group">
+
+                <label for="goal">
+                    Fitness Goal
+                </label>
+
+                <textarea
+                    id="goal"
+                    placeholder="Example: I want to lose belly fat and gain muscles"
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <!-- WORKOUT INTENSITY -->
+            <div class="form-group">
+
+                <label for="intensity">
+                    Workout Intensity
+                </label>
+
+                <select id="intensity">
+
+                    <option value="Low">
+                        Low
+                    </option>
+
+                    <option value="Medium" selected>
+                        Medium
+                    </option>
+
+                    <option value="High">
+                        High
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- SUBMIT -->
+            <button
+                type="submit"
+                id="generateButton"
+            >
+                🚀 Generate My Workout Plan
+            </button>
+
+        </form>
+
+
+        <div
+            id="loading"
+            class="loading hidden"
+        >
+            🤖 FitBuddy AI is creating your personalized plan...
+        </div>
+
+
+        <div
+            id="error"
+            class="error hidden"
+        ></div>
+
+    </main>
+
+
+    <!-- RESULT -->
+    <section
+        id="resultSection"
+        class="result-card hidden"
+    >
+
+        <div class="result-header">
+
+            <div class="result-icon">
+                🏋️
+            </div>
+
+            <h2>
+                Your Personalized Workout Plan
+            </h2>
+
+        </div>
+
+
+        <div class="user-information">
+
+            <h3>
+                👤 User Information
+            </h3>
+
+            <div class="user-grid">
+
+                <div>
+                    <strong>Name:</strong>
+                    <span id="resultName"></span>
+                </div>
+
+                <div>
+                    <strong>User ID:</strong>
+                    <span id="resultUserId"></span>
+                </div>
+
+                <div>
+                    <strong>Age:</strong>
+                    <span id="resultAge"></span>
+                </div>
+
+                <div>
+                    <strong>Weight:</strong>
+                    <span id="resultWeight"></span> kg
+                </div>
+
+                <div>
+                    <strong>Goal:</strong>
+                    <span id="resultGoal"></span>
+                </div>
+
+                <div>
+                    <strong>Intensity:</strong>
+                    <span id="resultIntensity"></span>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="ai-plan">
+
+            <h3>
+                🤖 AI Generated Workout Plan
+            </h3>
+
+            <div
+                id="workoutResult"
+                class="workout-text"
+            ></div>
+
+        </div>
+
+
+        <button
+            class="new-plan-button"
+            onclick="createNewPlan()"
+        >
+            🔄 Create Another Plan
+        </button>
+
+    </section>
+
+</div>
+
+
+<script>
+
+const form =
+    document.getElementById("workoutForm");
+
+const generateButton =
+    document.getElementById("generateButton");
+
+const loading =
+    document.getElementById("loading");
+
+const errorBox =
+    document.getElementById("error");
+
+const resultSection =
+    document.getElementById("resultSection");
+
+
+form.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    errorBox.classList.add("hidden");
+
+    loading.classList.remove("hidden");
+
+    generateButton.disabled = true;
+
+    generateButton.textContent =
+        "Generating...";
+
+
+    const name =
+        document.getElementById("name").value.trim();
+
+    const userId =
+        document.getElementById("userId").value;
+
+    const age =
+        document.getElementById("age").value;
+
+    const weight =
+        document.getElementById("weight").value;
+
+    const goal =
+        document.getElementById("goal").value.trim();
+
+    const intensity =
+        document.getElementById("intensity").value;
+
+
+    const prompt = `
+
+You are FitBuddy AI, a professional fitness assistant.
+
+Create a personalized workout plan for this user.
+
+Name: ${name}
+User ID: ${userId}
+Age: ${age}
+Weight: ${weight} kg
+Fitness Goal: ${goal}
+Workout Intensity: ${intensity}
+
+Create a clear workout plan containing:
+
+1. Warm-up
+2. Main workout
+3. Sets and repetitions
+4. Rest time
+5. Cool-down
+6. Weekly schedule
+7. Basic nutrition tips
+8. Safety tips
+
+Keep the response beginner-friendly and easy to understand.
+
+Do not diagnose medical conditions.
+
+`;
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/chat",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        message: prompt
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.message ||
+                "Backend request failed."
+            );
+
+        }
+
+
+        if (!data.success) {
+
+            throw new Error(
+                data.message ||
+                "AI could not generate the plan."
+            );
+
+        }
+
+
+        // USER INFORMATION
+
+        document.getElementById("resultName")
+            .textContent = name;
+
+        document.getElementById("resultUserId")
+            .textContent = userId;
+
+        document.getElementById("resultAge")
+            .textContent = age;
+
+        document.getElementById("resultWeight")
+            .textContent = weight;
+
+        document.getElementById("resultGoal")
+            .textContent = goal;
+
+        document.getElementById("resultIntensity")
+            .textContent = intensity;
+
+
+        // AI RESPONSE
+
+        document.getElementById("workoutResult")
+            .textContent = data.response;
+
+
+        // SHOW RESULT
+
+        resultSection.classList.remove("hidden");
+
+
+        resultSection.scrollIntoView({
+            behavior: "smooth"
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        errorBox.textContent =
+            "⚠️ " + error.message;
+
+        errorBox.classList.remove("hidden");
+
+    }
+
+    finally {
+
+        loading.classList.add("hidden");
+
+        generateButton.disabled = false;
+
+        generateButton.textContent =
+            "🚀 Generate My Workout Plan";
+
+    }
+
+});
+
+
+function createNewPlan() {
+
+    resultSection.classList.add("hidden");
+
+    form.reset();
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+</script>
+
+</body>
+</html>
